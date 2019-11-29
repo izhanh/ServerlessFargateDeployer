@@ -1,0 +1,120 @@
+aws:
+  aws_access_key_id: XXXXXXXXXXXXXXXXXXX
+  aws_secret_access_key: zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz
+  region_name: eu-west-1
+credentials:
+  ssh_port: 99
+  ssh_pass: tlg
+  ssh_user: root
+  api_key: YYYYYYYYYYYYYYYYYYYYYYYYYY
+api_prod:
+  properties:
+    name: beyondapi
+    aws_region: eu-west-1
+    url: api.logicommerce.cloud
+  load_balancer:
+    port: 80
+    image_version: latest
+    name: alb-fargate-back
+    vpc_id: vpc-00285ad9d5e49c53a
+  container:
+    port: 8080
+    name: beyondapi
+    image_version: latest
+    definition_file: containerDefinition.json
+  target_group:
+    port: 8080
+    protocol: HTTP
+    target_type: ip
+    name: tg-beyondapi
+  service:
+    name: svc-beyondapi
+    cluster_name: api-cluster
+    security_group: [sg-01fafbebc1f49c497]
+    subnets: [subnet-032e428e3a5ff64f3, subnet-088a49cc9f535ab33, subnet-0d6bf919cda46a92a]
+  task:
+    amount: 2
+    public_ip: DISABLED
+    launch_type: FARGATE
+    family: beyondapi
+  healthcheck:
+    path: /v1/auth
+    port: '8080'
+    timeout: 10
+    interval: 20
+    protocol: HTTP
+    grace_period: 100
+    healthy_threshold: 5
+    unhealthy_threshold: 5
+    matcher:
+      HttpCode: '400'
+shop:
+  multiple_operations:
+    shops_to_save: ['9', '11', '12']
+  properties:
+    url: url
+    sdk_version: master
+    fwk_version: master
+    aws_region: eu-west-1
+    image_version: ':latest'
+    shop_autoupdate: 'false'
+    ecommerce_version: master
+    ecommerce_id: <ECOMMERCE_ID_PLACEHOLDER>
+  lambda:
+    create_shop_function: createShop
+    delete_shop_function: deleteShop
+    update_shop_function: updateShop
+    compile_phar_function: compileS3Phar
+    create_repo_function: createRepository
+    api_key: YYYYYYYYYYYYYYYYYYYYYYYYYY
+  codebuild:
+    compile_phar_builder: PHARCompiler
+    create_repo_builder: BaseShopCloner
+  s3:
+    shops_bucket: shops-php-bucket
+    base_shop_bucket: base-shop-bucket
+  container:
+    port: 80
+    name: beyondshop
+    image_version: latest
+    definition_file: containerDefinition.json
+  load_balancer:
+    port: 80
+    image_version: latest
+    name: alb-fargate-front
+    vpc_id: vpc-00285ad9d5e49c53a
+  target_group:
+    port: 80
+    protocol: HTTP
+    target_type: ip
+    name: tg-<ECOMMERCE_ID_PLACEHOLDER>
+  task:
+    cpu: '256'
+    amount: 2
+    memory: '512'
+    public_ip: DISABLED
+    launch_type: FARGATE
+    base_task_family: beyondshop_base
+    family: td-<ECOMMERCE_ID_PLACEHOLDER>
+    sdk_version_placeholder: <SDK_VERSION>
+    fwk_version_placeholder: <FWK_VERSION>
+    image_version_placeholder: :IMG_VERSION
+    ecommerce_id_placeholder: <ECOMMERCE_ID>
+    shop_autoupdate_placeholder: <AUTO_UPDATE>
+    ecommerce_version_placeholder: <ECOMMERCE_VERSION>
+  service:
+    cluster_name: shops-cluster
+    name: svc-<ECOMMERCE_ID_PLACEHOLDER>
+    security_group: [sg-01fafbebc1f49c497]
+    subnets: [subnet-02478b9e1ef280879, subnet-01da5f9a278843e57, subnet-0e273cd5910ab66ab]
+  healthcheck:
+    path: /
+    port: '80'
+    timeout: 10
+    interval: 20
+    protocol: HTTP
+    grace_period: 60
+    healthy_threshold: 5
+    unhealthy_threshold: 5
+    matcher:
+      HttpCode: 200-499

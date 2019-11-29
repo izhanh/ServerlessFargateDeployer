@@ -1,0 +1,100 @@
+service: fargate-shop-lambda
+
+# Provider specs
+provider:
+  name: aws
+  region: eu-west-1
+  runtime: python3.6
+  timeout: 30
+  role: arn:aws:iam::XXXXXXXXXXXX:role/FargateShopsDeployerRole
+  apiGateway:
+    restApiId: 4zu22i6ub0
+    restApiRootResourceId: n149zkj0xi
+
+# API Functions
+functions:
+  createApi:
+    name: createApi
+    handler: ApiHandler.createApi
+    description: Create the Beyond CORE Api in Fargate containers
+    events:
+      - http:
+          cors: true
+          method: get
+          path: createapi
+          Content-Type: application/json
+  deleteApi:
+    name: deleteApi
+    handler: ApiHandler.deleteApi
+    description: Delete the Beyond CORE Api in Fargate containers
+    events:
+      - http:
+          cors: true
+          method: get
+          path: deleteapi
+          Content-Type: application/json
+
+# Shop Functions
+  createShop:
+    name: createShop
+    handler: ShopHandler.createShop
+    description: Create specified Beyond Shop(s) in Fargate containers
+    events:
+      - http:
+          cors: true
+          method: get
+          path: createshop
+          Content-Type: application/json
+  deleteShop:
+    name: deleteShop
+    handler: ShopHandler.deleteShop
+    description: Delete specified Beyond Shop(s) in Fargate containers
+    events:
+      - http:
+          cors: true
+          method: get
+          path: deleteshop
+          Content-Type: application/json
+  updateShop:
+    name: updateShop
+    handler: ShopHandler.updateShop
+    description: Update specified Beyond Shop(s) in Fargate containers
+    events:
+      - http:
+          cors: true
+          method: get
+          path: updateshop
+          Content-Type: application/json
+    vpc:
+      securityGroupIds:
+        - sg-01fafbebc1f49c497
+      subnetIds:
+        - subnet-02478b9e1ef280879
+        - subnet-01da5f9a278843e57
+        - subnet-0e273cd5910ab66ab
+  compileS3Phar:
+    name: compileS3Phar
+    handler: ShopHandler.compileS3Phar
+    description: Compile the Shop PHARs in a Shop's CodeCommit repo
+    events:
+      - http:
+          cors: true
+          method: get
+          path: compiles3phar
+          Content-Type: application/json
+    
+# Plugins and addons
+plugins:
+  - serverless-python-requirements
+
+custom:
+  pythonRequirements:
+    dockerizePip: non-linux
+
+package:
+  exclude:
+    - a/** # virtualenv
+    - venv/** # virtualenv
+    - node_modules/** # npm libs
+    - __pycache__/** # Python libs
+    - layer/** # All the Lambda libs

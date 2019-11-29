@@ -1,0 +1,26 @@
+service: fargate-deployer-layer
+
+# Provider specs
+provider:
+  name: aws
+  region: eu-west-1
+  runtime: python3.6
+
+# Plugins and addons
+plugins:
+  - serverless-python-requirements
+
+custom:
+  pythonRequirements:
+    dockerizePip: non-linux
+    layer:
+      name: fargateDeployer
+      description: Layer with the necessary functions to deploy fargate containers (Shops/APIs)
+      compatibleRuntimes:
+        - python3.6
+
+# Package exclusions
+package:
+  exclude:
+    - a/** # virtualenv
+    - venv/** # virtualenv
